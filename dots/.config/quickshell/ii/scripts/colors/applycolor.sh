@@ -66,6 +66,18 @@ apply_anyterm() {
 
   for file in /dev/pts/*; do
     if [[ $file =~ ^/dev/pts/[0-9]+$ ]]; then
+      # Avoid writing to kded / kwrited pseudo-terminals which triggers spurious system notifications
+      if command -v fuser >/dev/null 2>&1; then
+        skip=false
+        for pid in $(fuser "$file" 2>/dev/null); do
+          comm=$(ps -p "$pid" -o comm= 2>/dev/null)
+          if [[ "$comm" =~ ^(kded[0-9]*|kwrited)$ ]]; then
+            skip=true
+            break
+          fi
+        done
+        $skip && continue
+      fi
       {
       cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file"
       } & disown || true

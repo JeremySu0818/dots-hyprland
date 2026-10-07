@@ -167,6 +167,7 @@ switch() {
     type_flag="$3"
     color_flag="$4"
     color="$5"
+    noswitch_flag="$6"
 
     # Start Gemini auto-categorization if enabled
     aiStylingEnabled=$(jq -r '.background.widgets.clock.cookie.aiStyling' "$SHELL_CONFIG_FILE")
@@ -192,7 +193,9 @@ switch() {
             exit 0
         fi
 
-        check_and_prompt_upscale "$imgpath" &
+        if [[ "$noswitch_flag" != "1" ]]; then
+            check_and_prompt_upscale "$imgpath" &
+        fi
         kill_existing_mpvpaper
 
         if is_video "$imgpath"; then
@@ -468,7 +471,7 @@ main() {
         fi
     fi
 
-    switch "$imgpath" "$mode_flag" "$type_flag" "$color_flag" "$color"
+    switch "$imgpath" "$mode_flag" "$type_flag" "$color_flag" "$color" "$noswitch_flag"
 }
 
 main "$@"
